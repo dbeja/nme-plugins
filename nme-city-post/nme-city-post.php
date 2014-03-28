@@ -29,7 +29,7 @@ if ( !class_exists('NME_City_Post') ) {
 	
 	class NME_City_Post {
 	
-		const WEATHER_URL = 'http://api.openweathermap.org/data/2.5/weather?mode=xml&units=metric&q=';
+		const WEATHER_URL = 'http://api.openweathermap.org/data/2.5/weather?mode=xml&';
 	
 		private $plugin_path = '';
 		
@@ -100,6 +100,13 @@ if ( !class_exists('NME_City_Post') ) {
 		*/
 		public function show_city_weather( $atts, $content = null ) {
 
+			// read parameters
+			extract( shortcode_atts( array(
+				'units' => 'c'
+			), $atts ) );
+			if( $units == 'f' ) $units_system = 'imperial';
+			else $units_system = 'metric';
+	
 			// get cities of the current post
 			$cities = get_the_terms( get_the_ID(), 'nme-city' );
 			
@@ -110,7 +117,8 @@ if ( !class_exists('NME_City_Post') ) {
 			
 			// read temperature from openweathermap.org api
 			if( !empty( $city ) ) {
-				$response = wp_remote_get( self::WEATHER_URL . $city->name );
+				$url = self::WEATHER_URL . 'units=' . $units_system . '&q=' . $city->name;
+				$response = wp_remote_get( $url );
 				$response_xml = simplexml_load_string( $response['body'] );
 				$temperature = $response_xml->temperature->attributes()->value;
 			}
